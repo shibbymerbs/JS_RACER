@@ -430,19 +430,38 @@ class Game {
         this.ctx.fillStyle = '#3a3a3a';
         this.ctx.fillRect(startX, 0, roadWidth, this.canvas.height);
 
-        // Draw lane markings
+        // Calculate animation speed based on enemy speed and boost state
+        const baseSpeed = -200;
+        let scrollSpeed = baseSpeed;
+
+        // Get current time for animation
+        const now = Date.now();
+
+        // If boost is active or on cooldown, use the multiplier
+        if (this.isBoostActive()) {
+            scrollSpeed = baseSpeed * this.speedMultiplier;
+        }
+
+        // Draw animated lane markings that scroll upward
         this.ctx.strokeStyle = '#666';
         this.ctx.lineWidth = 4;
+
+        // Calculate how much to offset the lines based on time and speed
+        const scrollOffset = (now % 1000) * scrollSpeed / 1000;
+        const lineSpacing = 40; // Distance between dashed line segments
+
         for (let i = 1; i < 4; i++) {
             const x = startX + i * 120;
+
+            // Draw solid lane divider
             this.ctx.beginPath();
             this.ctx.moveTo(x, 0);
             this.ctx.lineTo(x, this.canvas.height);
             this.ctx.stroke();
 
-            // Draw dashed lines
-            for (let y = 50; y < this.canvas.height; y += 40) {
-                this.ctx.fillStyle = '#666';
+            // Draw animated dashed lines that scroll upward
+            for (let y = -scrollOffset % lineSpacing; y < this.canvas.height + lineSpacing; y += lineSpacing) {
+                this.ctx.fillStyle = '#eaeaeaff';
                 this.ctx.fillRect(x - 2, y, 4, 20);
             }
         }
