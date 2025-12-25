@@ -14,7 +14,9 @@
         <div class="ui-overlay">
             <div class="score-display">Score: <span id="score">0</span></div>
             <div class="speed-boost-container">
-                <div class="speed-boost-indicator" id="speedBoostIndicator"></div>
+                <div class="speed-boost-indicator" id="speedBoostIndicator">
+                    <div class="speed-boost-fill" id="cooldownFill"></div>
+                </div>
                 <div class="cooldown-bar" id="cooldownBar">
                     <div class="cooldown-fill" id="cooldownFill"></div>
                 </div>
@@ -27,6 +29,17 @@
             </div>
         </div>
     </div>
+
+    <!-- Game Over Screen -->
+    <div class="game-over" id="gameOverScreen">
+        <p>Game Over!</p>
+        <div class="score-form" id="scoreForm">
+            <input type="text" id="playerName" placeholder="Enter your name (max 10 chars)" maxlength="10" required>
+            <button id="submitScoreBtn">Submit Score</button>
+        </div>
+        <button class="restart-btn" id="restartBtn">Restart Game</button>
+    </div>
+
     <script src="js/player.js"></script>
     <script src="js/enemy.js"></script>
     <script src="js/powerup.js"></script>

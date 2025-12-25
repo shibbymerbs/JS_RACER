@@ -69,9 +69,8 @@ console.log('isBoostActive():', mockGame.isBoostActive(), '(expected: true)');
 
 // Test 4: Speed multiplier during boost
 console.log('\nTest 4: Speed Multiplier During Boost');
-// Set the multiplier to simulate boost state
-mockGame.speedMultiplier = 1.5;
 const normalSpeed = 3;
+// Boost is active from Test 2, so applySpeedMultiplier should return speed * 1.5
 const boostedSpeed = mockGame.applySpeedMultiplier(normalSpeed);
 console.log('Normal speed:', normalSpeed);
 console.log('Boosted speed:', boostedSpeed, '(expected: 6)');

@@ -20,14 +20,11 @@ class Game {
         this.speedMultiplier = 1.5; // 1.5x speed during boost
 
         // Get UI elements for speed boost indicator
-        this.speedBoostFill = document.querySelector('.speed-boost-indicator');
+        this.speedBoostFill = document.querySelector('.speed-boost-fill');
         this.cooldownFill = document.querySelector('.cooldown-fill');
-        /**            <div class="speed-boost-container">
-                        <div class="speed-boost-indicator" id="speedBoostIndicator"></div>
-                        <div class="cooldown-bar" id="cooldownBar">
-                            <div class="cooldown-fill" id="cooldownFill"></div>
-                        </div>
-                    </div> */
+
+        // Load high scores from local storage
+        this.highScores = this.loadHighScores();
         // Set canvas size
         this.resizeCanvas();
         window.addEventListener('resize', this.resizeCanvas.bind(this));
@@ -162,7 +159,21 @@ class Game {
         if (gameOverScreen) {
             gameOverScreen.style.display = 'none';
         }
+        // Add restart event listener
+        document.querySelector('.restart-btn').addEventListener('click', () => {
+            this.init();
+        });
 
+        // Add score submission event listener
+        document.getElementById('submitScoreBtn').addEventListener('click', (e) => {
+            e.preventDefault(); // Prevent any default behavior
+            const playerName = document.getElementById('playerName').value.trim();
+            if (playerName) {
+                this.saveScore(playerName, this.score);
+                gameOverScreen.querySelector('.score-form').style.display = 'none';
+                this.showHighScores(); // Refresh high scores display
+            }
+        });
         // Start game loop
         requestAnimationFrame(this.gameLoop.bind(this));
     }
@@ -187,20 +198,23 @@ class Game {
                 gameOverScreen.innerHTML = `
                     <h1>Game Over</h1>
                     <p>Score: ${this.score}</p>
-                    <button id="restartBtn">Restart</button>
+                    <div class="score-form">
+                        <label for="playerName">Enter your name (max 10 chars):</label>
+                        <input type="text" id="playerName" maxlength="10" placeholder="Your Name">
+                        <button id="submitScoreBtn">Submit Score</button>
+                    </div>
+                    <button class="restart-btn" click="init" id="restartBtn">Restart</button>
                 `;
                 document.querySelector('.game-container').appendChild(gameOverScreen);
-
-                // Add restart event listener
-                document.getElementById('restartBtn').addEventListener('click', () => {
-                    this.init();
-                });
             } else {
                 gameOverScreen.style.display = 'flex';
                 const scoreDisplay = gameOverScreen.querySelector('p');
                 if (scoreDisplay) {
                     scoreDisplay.textContent = `Score: ${this.score}`;
                 }
+
+                // Show high scores
+                this.showHighScores();
             }
         }
 
@@ -402,6 +416,67 @@ class Game {
         // Update boost state based on time
         if (now >= this.speedBoostEndTime) {
             this.speedBoostActive = false;
+        }
+    }
+
+    /**
+     * Save score to local storage
+     */
+    saveScore(name, score) {
+        const scores = this.loadHighScores();
+        scores.push({ name: name.substring(0, 10), score: score }); // Limit to 10 chars
+
+        // Sort by score (descending)
+        scores.sort((a, b) => b.score - a.score);
+
+        // Keep only top 10 scores
+        if (scores.length > 10) {
+            scores.splice(10);
+        }
+
+        localStorage.setItem('highScores', JSON.stringify(scores));
+    }
+
+    /**
+     * Load high scores from local storage
+     */
+    loadHighScores() {
+        const scores = localStorage.getItem('highScores');
+        return scores ? JSON.parse(scores) : [];
+    }
+
+    /**
+     * Display high scores on game over screen
+     */
+    showHighScores() {
+        // Check if high scores section already exists
+        let highScoresSection = document.querySelector('.high-scores');
+        if (!highScoresSection) {
+            highScoresSection = document.createElement('div');
+            highScoresSection.className = 'high-scores';
+            highScoresSection.innerHTML = '<h2>High Scores</h2><ol id="scoresList"></ol>';
+            const gameOverScreen = document.querySelector('.game-over');
+            if (gameOverScreen) {
+                // Insert after the score form
+                const restartBtn = gameOverScreen.querySelector('#restartBtn');
+                if (restartBtn) {
+                    gameOverScreen.insertBefore(highScoresSection, restartBtn);
+                } else {
+                    gameOverScreen.appendChild(highScoresSection);
+                }
+            }
+        }
+
+        // Update scores list
+        const scoresList = highScoresSection.querySelector('#scoresList');
+        if (scoresList) {
+            scoresList.innerHTML = '';
+            this.highScores = this.loadHighScores();
+            this.highScores.forEach(score => {
+                const li = document.createElement('li');
+                li.textContent = `${score.name}: ${score.score}`;
+                scoresList.appendChild(li);
+            });
         }
     }
 }

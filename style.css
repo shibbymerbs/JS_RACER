@@ -109,6 +109,68 @@ canvas {
     background-color: #45a049;
 }
 
+/* Score submission form */
+.score-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px 0;
+    width: 80%;
+}
+
+.score-form input {
+    padding: 10px;
+    font-size: 16px;
+    text-align: center;
+    border: none;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    width: 100%;
+    max-width: 300px;
+}
+
+.score-form button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.score-form button:hover {
+    background-color: #45a049;
+}
+
+/* High scores section */
+.high-scores {
+    margin-top: 20px;
+    text-align: center;
+    color: white;
+}
+
+.high-scores h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.high-scores ol {
+    list-style-type: none;
+    padding: 0;
+    max-height: 300px;
+    overflow-y: auto;
+    text-align: left;
+}
+
+.high-scores li {
+    padding: 5px 10px;
+    margin: 2px 0;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
 /* Speed boost indicator */
 .speed-boost-container {
     position: absolute;
