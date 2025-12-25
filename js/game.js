@@ -34,6 +34,12 @@ class Game {
 
         // Initialize game
         this.init();
+
+        // Setup fullscreen button
+        this.setupFullscreenButton();
+
+        // Request fullscreen on mobile devices
+        //this.requestFullscreen();
     }
 
     resizeCanvas() {
@@ -44,6 +50,51 @@ class Game {
         if (this.player) {
             this.player.y = this.canvas.height - this.player.height - 50;
         }
+    }
+
+    /**
+     * Request fullscreen mode for better mobile experience
+     */
+    requestFullscreen() {
+        // Check if already in fullscreen
+        if (!document.fullscreenElement) {
+            const canvas = document.getElementById('gameCanvas');
+            if (canvas && canvas.requestFullscreen) {
+                // Try to go fullscreen on mobile devices
+                canvas.requestFullscreen().catch(err => {
+                    console.log('Fullscreen request failed:', err);
+                    // If fullscreen fails, at least hide address bar on mobile
+                    setTimeout(() => {
+                        window.scrollTo(0, 1);
+                    }, 100);
+                });
+            }
+        } else {
+            document.exitFullscreen();
+        }
+    }
+
+    setupFullscreenButton() {
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        if (fullscreenBtn) {
+            fullscreenBtn.addEventListener('click', () => {
+                this.requestFullscreen();
+            });
+        }
+
+        // Listen for fullscreen change events
+        document.addEventListener('fullscreenchange', () => {
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            if (fullscreenBtn) {
+                if (document.fullscreenElement) {
+                    fullscreenBtn.textContent = 'Exit Fullscreen';
+                } else {
+                    fullscreenBtn.textContent = 'Fullscreen';
+                }
+            }
+            // Resize canvas when entering/exiting fullscreen
+            this.resizeCanvas();
+        });
     }
 
     setupTouchControls() {
