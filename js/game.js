@@ -204,6 +204,16 @@ class Game {
             window.removeEventListener('keyup', this.player.keyboardHandlers.keyup);
         }
 
+        // Remove old game over screen event listeners to prevent duplicates
+        const restartBtn = document.querySelector('.restart-btn');
+        if (restartBtn) {
+            restartBtn.replaceWith(restartBtn.cloneNode(true));
+        }
+        const submitScoreBtn = document.getElementById('submitScoreBtn');
+        if (submitScoreBtn) {
+            submitScoreBtn.replaceWith(submitScoreBtn.cloneNode(true));
+        }
+
         // Create player
         this.player = new Player(this);
         this.startTime = null;
