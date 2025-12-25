@@ -196,7 +196,7 @@ class Game {
         // Create player
         this.player = new Player(this);
 
-        // Reset game state
+        // Reset game state - clear all existing enemies and powerups
         this.enemies = [];
         this.powerups = [];
         this.score = 0;
@@ -204,6 +204,11 @@ class Game {
         this.lastEnemyTime = 0;
         this.lastPowerupTime = 0;
         this.startTime = Date.now();
+
+        // Reset speed boost state to prevent speed increase on restart
+        this.speedBoostActive = false;
+        this.speedBoostEndTime = Date.now();
+        this.boostCooldownEndTime = Date.now();
 
         // Hide game over screen if visible
         const gameOverScreen = document.querySelector('.game-over');
