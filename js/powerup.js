@@ -109,12 +109,10 @@ class PowerUp {
                 player.activateInvincibility(3); // 3 seconds of invincibility
                 return true;
             case 'speedBoost':
-                player.maxSpeed += 4; // Temporary speed boost
-                setTimeout(() => {
-                    if (player) {
-                        player.maxSpeed = 8; // Reset to normal speed
-                    }
-                }, 5000);
+                // Activate the game's speed boost mechanism
+                //if (!player.game.speedBoostActive && Date.now() >= player.game.boostCooldownEndTime) {
+                player.game.activateSpeedBoost();
+                //}
                 return true;
         }
         return false;

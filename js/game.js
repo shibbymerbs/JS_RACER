@@ -71,6 +71,11 @@ class Game {
             const deltaX = startX - touchX;
             const deltaY = startY - touchY;
 
+            // Deadzone: only process swipes that exceed 50 pixels
+            if (Math.abs(deltaX) < 50 && Math.abs(deltaY) < 50) {
+                return;
+            }
+
             // Horizontal swipe detection
             if (Math.abs(deltaX) > Math.abs(deltaY)) {
                 if (deltaX < 0 && this.player.currentLane < 3) {

@@ -16,8 +16,10 @@ class Player {
         this.keys = {
             ArrowLeft: false,
             ArrowRight: false,
+            ArrowUp: false,
             'A': false,
-            'D': false
+            'D': false,
+            'W': false
         };
         this.laneChangeInProgress = false;
         this.targetLane = null;
@@ -76,6 +78,14 @@ class Player {
                     this.laneChangeInProgress = false;
                 }, 150); // Small delay to prevent rapid lane changes
             }
+        }
+
+        // Handle speed boost with up arrow or W key
+        if ((this.keys.ArrowUp || this.keys.W) && !this.game.speedBoostActive && Date.now() >= this.game.boostCooldownEndTime) {
+            this.game.activateSpeedBoost();
+            // Reset the key to prevent immediate reactivation
+            this.keys.ArrowUp = false;
+            this.keys.W = false;
         }
 
         // Only handle invincibility timer

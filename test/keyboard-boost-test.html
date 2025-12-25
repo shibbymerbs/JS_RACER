@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Keyboard Speed Boost Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        #gameCanvas {
+            border: 2px solid #333;
+            background-color: white;
+            display: block;
+            margin: 20px auto;
+        }
+
+        .instructions {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .status {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Keyboard Speed Boost Test</h1>
+
+    <div class="instructions">
+        <strong>Instructions:</strong><br>
+        - Press <kbd>←</kbd> or <kbd>A</kbd> to move left<br>
+        - Press <kbd>→</kbd> or <kbd>D</kbd> to move right<br>
+        - Press <kbd>↑</kbd> or <kbd>W</kbd> to activate speed boost (should turn car yellow)<br>
+        - Speed boost has a 5-second cooldown
+    </div>
+
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <div class="status">
+        <h3>Status:</h3>
+        <p id="boostStatus">Speed Boost: Inactive</p>
+        <p id="cooldownStatus">Cooldown: None</p>
+        <p id="laneStatus">Current Lane: 2 (center-left)</p>
+    </div>
+
+    <script src="../js/game.js"></script>
+    <script src="../js/player.js"></script>
+    <script src="../js/enemy.js"></script>
+    <script src="../js/powerup.js"></script>
+    <script>
+        // Initialize game
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const game = new Game(canvas);
+        const player = new Player(game);
+
+        // Update status display
+        function updateStatus() {
+            const boostStatus = document.getElementById('boostStatus');
+            const cooldownStatus = document.getElementById('cooldownStatus');
+
+            if (game.speedBoostActive) {
+                boostStatus.textContent = 'Speed Boost: ACTIVE';
+                boostStatus.style.color = 'green';
+            } else {
+                boostStatus.textContent = 'Speed Boost: Inactive';
+                boostStatus.style.color = 'black';
+            }
+
+            const now = Date.now();
+            if (game.boostCooldownEndTime && now < game.boostCooldownEndTime) {
+                const cooldownLeft = Math.ceil((game.boostCooldownEndTime - now) / 1000);
+                cooldownStatus.textContent = `Cooldown: ${cooldownLeft} seconds remaining`;
+            } else {
+                cooldownStatus.textContent = 'Cooldown: None';
+            }
+
+            document.getElementById('laneStatus').textContent =
+                `Current Lane: ${player.currentLane + 1} (${['left', 'center-left', 'center-right', 'right'][player.currentLane]})`;
+        }
+
+        // Game loop
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw road background
+            ctx.fillStyle = '#555';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw lane markers
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            for (let i = 1; i < 4; i++) {
+                const x = (canvas.width / 4) * i;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+
+            // Draw player
+            if (game.speedBoostActive) {
+                player.color = '#f1c40f'; // Yellow when boosted
+            } else {
+                player.color = '#3498db';
+            }
+            player.update(16); // 16ms deltaTime (~60fps)
+            player.draw(ctx);
+
+            updateStatus();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+
+        console.log('Keyboard Speed Boost Test Loaded');
+        console.log('Press ↑ or W to activate speed boost');
+    </script>
+</body>
+
+</html>
