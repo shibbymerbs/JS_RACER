@@ -41,7 +41,7 @@ class Game {
         this.init();
 
         // Setup fullscreen button
-        this.setupFullscreenButton();
+        //this.setupFullscreenButton();
 
         // Request fullscreen on mobile devices
         //this.requestFullscreen();
@@ -198,9 +198,15 @@ class Game {
     }
 
     init() {
+        // Remove old player's keyboard event listeners before creating new player
+        if (this.player && this.player.keyboardHandlers) {
+            window.removeEventListener('keydown', this.player.keyboardHandlers.keydown);
+            window.removeEventListener('keyup', this.player.keyboardHandlers.keyup);
+        }
+
         // Create player
         this.player = new Player(this);
-
+        this.startTime = null;
         // Reset game state - clear all existing enemies and powerups
         this.enemies = [];
         this.powerups = [];
@@ -209,8 +215,7 @@ class Game {
         this.gameOver = false;
         this.lastEnemyTime = 0;
         this.lastPowerupTime = 0;
-        this.startTime = Date.now();
-
+        //this.startTime = Date.now();
         // Reset speed boost state to prevent speed increase on restart
         this.speedBoostActive = false;
         this.speedBoostEndTime = Date.now();
@@ -224,6 +229,7 @@ class Game {
         // Add restart event listener
         document.querySelector('.restart-btn').addEventListener('click', () => {
             gameOverScreen.querySelector('.score-form').style.display = 'flex';
+            //window.location.reload();
             this.init();
         });
 
@@ -280,7 +286,6 @@ class Game {
                 this.showHighScores();
             }
         }
-
         this.startTime = timestamp;
     }
 
@@ -332,8 +337,7 @@ class Game {
                         this.score += 50;
 
                         // Show toast notification for points
-                        const playerBox = this.player.getBoundingBox();
-                        this.showToast(50, playerBox.x + playerBox.width / 2, playerBox.y - 30);
+                        this.showToast(50, powerupBox.x + powerupBox.width / 2, powerupBox.y - 30);
                     }
                 } else {
                     this.powerups.splice(i, 1);
@@ -370,8 +374,7 @@ class Game {
                             this.explosions.push(explosion);
 
                             // Show toast notification for points
-                            const playerBox = this.player.getBoundingBox();
-                            this.showToast(50, playerBox.x + playerBox.width / 2, playerBox.y - 30);
+                            this.showToast(50, enemyBox.x + enemyBox.width / 2, enemyBox.y - 30);
                         } else {
                             // No shield - game over
                             this.gameOver = true;
@@ -384,8 +387,7 @@ class Game {
                         enemy.hasScored = true;
 
                         // Show toast notification for points
-                        const playerBox = this.player.getBoundingBox();
-                        this.showToast(10, playerBox.x + playerBox.width / 2, playerBox.y - 30);
+                        this.showToast(10, enemyBox.x + enemyBox.width / 2, enemyBox.y - 30);
                     }
                 } else {
                     this.enemies.splice(i, 1);
