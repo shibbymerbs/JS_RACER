@@ -331,14 +331,20 @@ class Game {
                     const enemyBox = enemy.getBoundingBox();
 
                     // Simple AABB collision detection
-                    if (!this.player.isInvincible &&
-                        playerBox.x < enemyBox.x + enemyBox.width &&
+                    if (playerBox.x < enemyBox.x + enemyBox.width &&
                         playerBox.x + playerBox.width > enemyBox.x &&
                         playerBox.y < enemyBox.y + enemyBox.height &&
                         playerBox.y + playerBox.height > enemyBox.y) {
 
-                        // Collision detected - game over
-                        this.gameOver = true;
+                        // Collision detected - check shield status
+                        if (this.player.isInvincible) {
+                            // Shield is active - destroy the enemy
+                            this.enemies.splice(i, 1);
+                            this.score += 50; // Bonus for destroying enemy with shield
+                        } else {
+                            // No shield - game over
+                            this.gameOver = true;
+                        }
                     }
 
                     // Score when enemy passes the player

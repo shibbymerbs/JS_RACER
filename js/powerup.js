@@ -37,7 +37,7 @@ class PowerUp {
     update() {
         // Apply speed multiplier if boost is active
         const currentSpeed = this.game.isBoostActive()
-            ? this.speed * this.game.applySpeedMultiplier(this.speed)
+            ? this.speed * this.game.applySpeedMultiplier(this.game.speedMultiplier)
             : this.speed;
 
         // Move downward
