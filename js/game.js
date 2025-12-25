@@ -5,6 +5,7 @@ class Game {
         this.player = null;
         this.enemies = [];
         this.powerups = [];
+        this.explosions = []; // Track explosion animations
         this.score = 0;
         this.gameOver = false;
         this.lastEnemyTime = 0;
@@ -203,6 +204,7 @@ class Game {
         // Reset game state - clear all existing enemies and powerups
         this.enemies = [];
         this.powerups = [];
+        this.explosions = []; // Clear explosions on restart
         this.score = 0;
         this.gameOver = false;
         this.lastEnemyTime = 0;
@@ -300,6 +302,13 @@ class Game {
             this.lastPowerupTime = currentTime;
         }
 
+        // Update explosions - remove completed ones
+        for (let i = this.explosions.length - 1; i >= 0; i--) {
+            if (!this.explosions[i].update()) {
+                this.explosions.splice(i, 1);
+            }
+        }
+
         // Update player
         if (this.player) {
             this.player.update(deltaTime);
@@ -346,9 +355,19 @@ class Game {
 
                         // Collision detected - check shield status
                         if (this.player.isInvincible) {
-                            // Shield is active - destroy the enemy
+                            // Shield is active - destroy the enemy with explosion effect
                             this.enemies.splice(i, 1);
                             this.score += 50; // Bonus for destroying enemy with shield
+
+                            // Create explosion at enemy position following its trajectory
+                            const explosion = new Explosion(
+                                this,
+                                enemyBox.x + enemyBox.width / 2,
+                                enemyBox.y + enemyBox.height / 2,
+                                enemy.speedX, // Follow enemy's horizontal speed
+                                enemy.speedY   // Follow enemy's vertical speed
+                            );
+                            this.explosions.push(explosion);
 
                             // Show toast notification for points
                             const playerBox = this.player.getBoundingBox();
@@ -387,6 +406,9 @@ class Game {
 
         // Draw enemies
         this.enemies.forEach(enemy => enemy.draw(this.ctx));
+
+        // Draw explosions (after enemies so they appear on top)
+        this.explosions.forEach(explosion => explosion.draw(this.ctx));
 
         // Draw player
         if (this.player) {
