@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JS Racer - 2D Racing Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div class="ui-overlay">
+            <div class="score-display">Score: <span id="score">0</span></div>
+            <div class="lane-indicators">
+                <div class="lane-indicator left" data-lane="0"></div>
+                <div class="lane-indicator center-left" data-lane="1"></div>
+                <div class="lane-indicator center-right" data-lane="2"></div>
+                <div class="lane-indicator right" data-lane="3"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/player.js"></script>
+    <script src="js/enemy.js"></script>
+    <script src="js/powerup.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
