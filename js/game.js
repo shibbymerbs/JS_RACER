@@ -23,6 +23,10 @@ class Game {
         this.speedBoostFill = document.querySelector('.speed-boost-fill');
         this.cooldownFill = document.querySelector('.cooldown-fill');
 
+        // Toast notifications
+        this.toastContainer = document.getElementById('toastContainer');
+        this.activeToasts = [];
+
         // Load high scores from local storage
         this.highScores = this.loadHighScores();
         // Set canvas size
@@ -317,6 +321,10 @@ class Game {
                         powerup.activate(this.player);
                         this.powerups.splice(i, 1);
                         this.score += 50;
+
+                        // Show toast notification for points
+                        const playerBox = this.player.getBoundingBox();
+                        this.showToast(50, playerBox.x + playerBox.width / 2, playerBox.y - 30);
                     }
                 } else {
                     this.powerups.splice(i, 1);
@@ -341,6 +349,10 @@ class Game {
                             // Shield is active - destroy the enemy
                             this.enemies.splice(i, 1);
                             this.score += 50; // Bonus for destroying enemy with shield
+
+                            // Show toast notification for points
+                            const playerBox = this.player.getBoundingBox();
+                            this.showToast(50, playerBox.x + playerBox.width / 2, playerBox.y - 30);
                         } else {
                             // No shield - game over
                             this.gameOver = true;
@@ -351,6 +363,10 @@ class Game {
                     if (enemyBox.y > playerBox.y + playerBox.height && !enemy.hasScored) {
                         this.score += 10;
                         enemy.hasScored = true;
+
+                        // Show toast notification for points
+                        const playerBox = this.player.getBoundingBox();
+                        this.showToast(10, playerBox.x + playerBox.width / 2, playerBox.y - 30);
                     }
                 } else {
                     this.enemies.splice(i, 1);
@@ -480,6 +496,34 @@ class Game {
         if (now >= this.speedBoostEndTime) {
             this.speedBoostActive = false;
         }
+    }
+
+    /**
+     * Show toast notification for points
+     * @param {number} points - Points value to display
+     * @param {number} x - X position for the toast
+     * @param {number} y - Y position for the toast
+     */
+    showToast(points, x, y) {
+        if (!this.toastContainer) return;
+
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = `+${points}pt`;
+
+        // Position the toast near the player
+        toast.style.left = `${x}px`;
+        toast.style.top = `${y}px`;
+
+        this.toastContainer.appendChild(toast);
+        toast.classList.add('visible');
+
+        // Remove toast after animation completes
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 500); // Match CSS transition duration
     }
 
     /**
