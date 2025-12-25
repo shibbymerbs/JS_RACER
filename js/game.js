@@ -212,6 +212,7 @@ class Game {
         }
         // Add restart event listener
         document.querySelector('.restart-btn').addEventListener('click', () => {
+            gameOverScreen.querySelector('.score-form').style.display = 'flex';
             this.init();
         });
 
