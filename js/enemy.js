@@ -1,5 +1,5 @@
 class Enemy {
-    constructor(game, laneIndex) {
+    constructor(game, laneIndex, speed) {
         this.game = game;
         this.width = 40;
         this.height = 80;
@@ -7,7 +7,7 @@ class Enemy {
         this.currentLane = laneIndex;
         this.x = this.getLaneXPosition(this.currentLane);
         this.y = -this.height; // Start above the screen
-        this.speed = Math.random() * 3 + 2; // Random speed between 2 and 5
+        this.speed = speed !== undefined ? speed : Math.random() * 3 + 2; // Random speed between 2 and 5
         this.hasScored = false; // Track if enemy has passed the player for scoring
         this.type = this.getRandomType();
         this.color = this.getColorForType();
@@ -38,8 +38,13 @@ class Enemy {
     }
 
     update() {
+        // Apply speed multiplier if boost is active
+        const currentSpeed = this.game.isBoostActive()
+            ? this.speed * this.game.applySpeedMultiplier(this.game.speedMultiplier)
+            : this.speed;
+
         // Move downward
-        this.y += this.speed;
+        this.y += currentSpeed;
 
         // Remove if off screen
         if (this.y > this.game.canvas.height) {

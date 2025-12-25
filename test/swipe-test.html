@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Swipe Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        #testArea {
+            width: 400px;
+            height: 600px;
+            border: 2px solid #ccc;
+            margin: 20px auto;
+            background-color: #f5f5f5;
+            position: relative;
+        }
+
+        #status {
+            font-size: 18px;
+            margin: 10px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Swipe Test</h1>
+    <div id="status">Touch the screen and swipe up or down</div>
+    <div id="testArea"></div>
+
+    <script>
+        const testArea = document.getElementById('testArea');
+        const status = document.getElementById('status');
+
+        let startY = 0;
+        let startX = 0;
+
+        // Touch start
+        testArea.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            startY = touch.clientY;
+            startX = touch.clientX;
+            status.textContent = 'Touch detected - swipe up or down';
+        }, { passive: false });
+
+        // Touch end
+        testArea.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            const touch = e.changedTouches[0];
+            const endY = touch.clientY;
+            const endX = touch.clientX;
+
+            const deltaY = endY - startY;
+            const deltaX = endX - startX;
+
+            // Check if vertical swipe (more vertical than horizontal movement)
+            if (Math.abs(deltaY) > Math.abs(deltaX)) {
+                if (deltaY < 0) { // Swipe up
+                    status.textContent = '✓ SWIPE UP detected!';
+                    status.style.color = 'green';
+                } else { // Swipe down
+                    status.textContent = 'Swipe DOWN detected';
+                    status.style.color = 'blue';
+                }
+            } else {
+                if (deltaX < 0) { // Swipe left
+                    status.textContent = 'Swipe LEFT detected';
+                    status.style.color = 'orange';
+                } else { // Swipe right
+                    status.textContent = 'Swipe RIGHT detected';
+                    status.style.color = 'purple';
+                }
+            }
+
+            setTimeout(() => {
+                status.textContent = 'Touch the screen and swipe up or down';
+                status.style.color = 'black';
+            }, 1000);
+        }, { passive: false });
+    </script>
+</body>
+
+</html>

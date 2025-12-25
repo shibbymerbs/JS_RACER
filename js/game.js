@@ -13,6 +13,21 @@ class Game {
         this.powerupSpawnInterval = 2000; // 2 seconds - much faster spawning
         this.startTime = null;
 
+        // Speed boost state
+        this.speedBoostActive = false;
+        this.speedBoostEndTime = Date.now();
+        this.boostCooldownEndTime = Date.now();
+        this.speedMultiplier = 1.5; // 1.5x speed during boost
+
+        // Get UI elements for speed boost indicator
+        this.speedBoostFill = document.querySelector('.speed-boost-indicator');
+        this.cooldownFill = document.querySelector('.cooldown-fill');
+        /**            <div class="speed-boost-container">
+                        <div class="speed-boost-indicator" id="speedBoostIndicator"></div>
+                        <div class="cooldown-bar" id="cooldownBar">
+                            <div class="cooldown-fill" id="cooldownFill"></div>
+                        </div>
+                    </div> */
         // Set canvas size
         this.resizeCanvas();
         window.addEventListener('resize', this.resizeCanvas.bind(this));
@@ -37,12 +52,14 @@ class Game {
     setupTouchControls() {
         const canvas = this.canvas;
         let startX = 0;
+        let startY = 0;
         let isSwiping = false;
 
         canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
             isSwiping = true;
             startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
         }, { passive: false });
 
         canvas.addEventListener('touchmove', (e) => {
@@ -50,10 +67,12 @@ class Game {
             if (!isSwiping || !this.player) return;
 
             const touchX = e.touches[0].clientX;
+            const touchY = e.touches[0].clientY;
             const deltaX = startX - touchX;
+            const deltaY = startY - touchY;
 
             // Horizontal swipe detection
-            if (Math.abs(deltaX) > 30) { // Minimum distance for swipe
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
                 if (deltaX < 0 && this.player.currentLane < 3) {
                     // Swipe right (finger moves left, deltaX negative) - move to right lane
                     const targetLane = Math.min(3, this.player.currentLane + 1);
@@ -66,11 +85,58 @@ class Game {
                     startX = touchX;
                 }
             }
+            // Vertical swipe detection
+            else if (Math.abs(deltaY) > Math.abs(deltaX)) {
+                console.log('Swipe up - speed boost');
+                // Swipe up - speed boost
+                if (!this.speedBoostActive && Date.now() >= this.boostCooldownEndTime) {
+                    this.activateSpeedBoost();
+                    console.log('Speed boost activated!');
+                }
+            }
+
+            startY = touchY; // Update Y position for vertical swipe detection
         }, { passive: false });
 
-        canvas.addEventListener('touchend', () => {
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
             isSwiping = false;
+            console.log('Touch end detected');
+            if (!this.player || this.gameOver) return;
+
+            // const touchX = e.changedTouches[0].clientX;
+            // const touchY = e.changedTouches[0].clientY;
+            // const deltaX = startX - touchX;
+            // const deltaY = startY - touchY;
         });
+    }
+
+    activateSpeedBoost() {
+        // Activate speed boost for 3 seconds
+        this.speedBoostActive = true;
+        this.speedBoostEndTime = Date.now() + 3000; // 3 second boost
+
+        // Set cooldown to start after boost ends (2 seconds cooldown)
+        this.boostCooldownEndTime = this.speedBoostEndTime + 2000;
+
+        // Visual feedback - flash the screen or show indicator
+        const canvas = document.getElementById('gameCanvas');
+        if (canvas) {
+            canvas.style.border = '4px solid #ffeb3b';
+            setTimeout(() => {
+                canvas.style.border = '';
+            }, 200);
+        }
+    }
+
+    applySpeedMultiplier(speed) {
+        return this.speedBoostActive ? speed * this.speedMultiplier : speed;
+    }
+
+    isBoostActive() {
+        const now = Date.now();
+        // Boost is active if it's currently in boost period or on cooldown
+        return this.speedBoostActive || (now < this.boostCooldownEndTime && !this.speedBoostActive);
     }
 
     init() {
@@ -141,14 +207,16 @@ class Game {
         const currentTime = Date.now();
         if (currentTime - this.lastEnemyTime > this.enemySpawnInterval) {
             const laneIndex = Math.floor(Math.random() * 4);
-            this.enemies.push(new Enemy(this, laneIndex));
+            const enemySpeed = this.applySpeedMultiplier(2); // Base speed of 2, multiplied during boost
+            this.enemies.push(new Enemy(this, laneIndex, enemySpeed));
             this.lastEnemyTime = currentTime;
         }
 
         // Spawn powerups - use Date.now() for accurate timing
         if (currentTime - this.lastPowerupTime > this.powerupSpawnInterval) {
             const laneIndex = Math.floor(Math.random() * 4);
-            this.powerups.push(new PowerUp(this, laneIndex));
+            const powerupSpeed = this.applySpeedMultiplier(2); // Base speed of 2, multiplied during boost
+            this.powerups.push(new PowerUp(this, laneIndex, powerupSpeed));
             this.lastPowerupTime = currentTime;
         }
 
@@ -227,6 +295,9 @@ class Game {
             this.player.draw(this.ctx);
         }
 
+        // Update speed boost indicator
+        this.updateSpeedBoostIndicator();
+
         // Update lane indicators
         this.updateLaneIndicators();
     }
@@ -281,6 +352,51 @@ class Game {
             if (activeIndicator) {
                 activeIndicator.classList.add('active');
             }
+        }
+    }
+
+    updateSpeedBoostIndicator() {
+        const now = Date.now();
+
+        //if (this.speedBoostFill && this.cooldownFill) {
+        // Check if boost is active or on cooldown
+        if (now < this.boostCooldownEndTime) {
+            // Calculate progress for the current state
+            let progress;
+            let maxTime;
+
+            if (this.speedBoostActive && now < this.speedBoostEndTime) {
+                // Boost is active - show green fill
+                progress = 1 - ((now - this.speedBoostEndTime + 3000) / 3000);
+                maxTime = 3000;
+            } else if (now >= this.speedBoostEndTime && now < this.boostCooldownEndTime) {
+                // Cooldown is active - show orange fill
+                progress = 1 - ((now - this.boostCooldownEndTime + 2000) / 2000);
+                maxTime = 2000;
+            }
+
+            if (progress !== undefined && progress >= 0) {
+                // Ensure progress is between 0 and 1
+                const clampedProgress = Math.max(0, Math.min(1, progress));
+                this.speedBoostFill.style.width = `${clampedProgress * 100}%`;
+
+                // Show cooldown bar during cooldown period only
+                if (now >= this.speedBoostEndTime && now < this.boostCooldownEndTime) {
+                    this.cooldownFill.style.width = `${clampedProgress * 100}%`;
+                } else {
+                    this.cooldownFill.style.width = '0%';
+                }
+            }
+        } else {
+            // No boost or cooldown - hide indicators
+            this.speedBoostFill.style.width = '0%';
+            this.cooldownFill.style.width = '0%';
+        }
+        //}
+
+        // Update boost state based on time
+        if (now >= this.speedBoostEndTime) {
+            this.speedBoostActive = false;
         }
     }
 }

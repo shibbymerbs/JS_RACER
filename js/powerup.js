@@ -1,5 +1,5 @@
 class PowerUp {
-    constructor(game, laneIndex) {
+    constructor(game, laneIndex, speed) {
         this.game = game;
         this.width = 30;
         this.height = 30;
@@ -7,7 +7,7 @@ class PowerUp {
         this.currentLane = laneIndex;
         this.x = this.getLaneXPosition(this.currentLane);
         this.y = -this.height; // Start above the screen
-        this.speed = Math.random() * 2 + 1; // Random speed between 1 and 3
+        this.speed = speed !== undefined ? speed : Math.random() * 2 + 1; // Random speed between 1 and 3
         this.type = this.getRandomType();
         this.color = this.getColorForType();
     }
@@ -35,15 +35,21 @@ class PowerUp {
     }
 
     update() {
+        // Apply speed multiplier if boost is active
+        const currentSpeed = this.game.isBoostActive()
+            ? this.speed * this.game.applySpeedMultiplier(this.speed)
+            : this.speed;
+
         // Move downward
-        this.y += this.speed;
+        this.y += currentSpeed;
 
         // Remove if off screen
         if (this.y > this.game.canvas.height) {
             return false;
         }
-
-        return true;
+        else {
+            return true;
+        }
     }
 
     getBoundingBox() {
