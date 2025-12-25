@@ -6,7 +6,7 @@ class Player {
         this.laneWidth = 120;
         this.currentLane = 1; // Start in center-left lane (index 1)
         this.x = this.getLaneXPosition(this.currentLane);
-        this.y = game.canvas.height - this.height - 50;
+        this.y = game.canvas.height - this.height - 250;
         // Player stays static on y-axis, no speed or acceleration needed
         this.color = '#3498db';
         this.isInvincible = false;

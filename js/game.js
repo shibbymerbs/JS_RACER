@@ -48,7 +48,7 @@ class Game {
         this.canvas.height = container.clientHeight;
 
         if (this.player) {
-            this.player.y = this.canvas.height - this.player.height - 50;
+            this.player.y = this.canvas.height - this.player.height - 250;
         }
     }
 
