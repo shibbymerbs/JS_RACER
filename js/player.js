@@ -26,6 +26,10 @@ class Player {
         this.animationDuration = 150; // 150ms for smooth transition
         this.animationStartTime = 0;
 
+        // Speed tracking for moving average calculation
+        this.speedHistory = [];
+        this.maxSpeedHistory = 20; // Keep last 20 speed measurements
+
         // Set up keyboard event listeners
         this.setupKeyboardControls();
     }
@@ -87,6 +91,9 @@ class Player {
             this.keys.ArrowUp = false;
             this.keys.W = false;
         }
+
+        // Update speed history for moving average calculation
+        this.updateSpeedHistory();
 
         // Only handle invincibility timer
         if (this.isInvincible) {
@@ -156,6 +163,46 @@ class Player {
     activateInvincibility(duration) {
         this.isInvincible = true;
         this.invincibilityTimer = duration * 1000; // Convert to milliseconds
+    }
+
+    getCurrentSpeed() {
+        // Calculate current speed based on game's speed multiplier
+        const baseSpeed = 50; // Base speed in km/hr
+
+        // Check if game is properly initialized to avoid NaN values
+        if (!this.game || !this.game.speedBoostActive) {
+            return baseSpeed;
+        }
+
+        if (this.game.speedBoostActive) {
+            // During boost, speed is between 60-80 km/hr
+            return Math.min(80, baseSpeed + (this.game.speedMultiplier - 1) * 20);
+        } else if (Date.now() < this.game.boostCooldownEndTime && this.game.boostCooldownEndTime > 0) {
+            // During cooldown, speed is slightly reduced
+            const cooldownProgress = 1 - Math.min(1, (this.game.boostCooldownEndTime - Date.now()) / 2000);
+            return baseSpeed * (0.9 + cooldownProgress * 0.1); // 50-55 km/hr during cooldown
+        }
+
+        return baseSpeed; // Normal speed
+    }
+
+    updateSpeedHistory() {
+        const currentSpeed = this.getCurrentSpeed();
+        this.speedHistory.push(currentSpeed);
+
+        // Keep only the most recent speeds
+        if (this.speedHistory.length > this.maxSpeedHistory) {
+            this.speedHistory.shift();
+        }
+    }
+
+    getAverageSpeed() {
+        if (this.speedHistory.length === 0) {
+            return 50;
+        }
+
+        const sum = this.speedHistory.reduce((acc, speed) => acc + speed, 0);
+        return Math.round(sum / this.speedHistory.length * 10) / 10; // Round to 1 decimal place
     }
 
     setupKeyboardControls() {

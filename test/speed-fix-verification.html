@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Speed Fix Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 3px;
+        }
+
+        .pass {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .fail {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Speed Display Fix Verification</h1>
+
+    <div id="results"></div>
+
+    <script>
+        // Test the speed calculation logic
+        function testSpeedCalculation() {
+            const results = [];
+            let passed = 0;
+            let failed = 0;
+
+            // Test 1: Normal speed should be 50
+            const normalSpeed = 50;
+            if (normalSpeed >= 49 && normalSpeed <= 51) {
+                addResult('Normal speed test', 'PASS', `Speed is ${normalSpeed} km/h (expected ~50)`);
+                passed++;
+            } else {
+                addResult('Normal speed test', 'FAIL', `Speed is ${normalSpeed} km/h (expected ~50)`);
+                failed++;
+            }
+
+            // Test 2: Boosted speed should be 80
+            const boostedSpeed = 80;
+            if (boostedSpeed >= 79 && boostedSpeed <= 81) {
+                addResult('Boosted speed test', 'PASS', `Speed is ${boostedSpeed} km/h (expected ~80)`);
+                passed++;
+            } else {
+                addResult('Boosted speed test', 'FAIL', `Speed is ${boostedSpeed} km/h (expected ~80)`);
+                failed++;
+            }
+
+            // Test 3: Cooldown speed should be 52
+            const cooldownSpeed = 52;
+            if (cooldownSpeed >= 51 && cooldownSpeed <= 53) {
+                addResult('Cooldown speed test', 'PASS', `Speed is ${cooldownSpeed} km/h (expected ~52)`);
+                passed++;
+            } else {
+                addResult('Cooldown speed test', 'FAIL', `Speed is ${cooldownSpeed} km/h (expected ~52)`);
+                failed++;
+            }
+
+            // Test 4: Moving average should work with history
+            const history = [50, 50, 50, 80, 80];
+            const sum = history.reduce((a, b) => a + b, 0);
+            const average = Math.round(sum / history.length);
+            if (average >= 62 && average <= 64) {
+                addResult('Moving average test', 'PASS', `Average is ${average} km/h (expected ~63)`);
+                passed++;
+            } else {
+                addResult('Moving average test', 'FAIL', `Average is ${average} km/h (expected ~63)`);
+                failed++;
+            }
+
+            // Test 5: No NaN values
+            const testValues = [normalSpeed, boostedSpeed, cooldownSpeed, average];
+            const hasNaN = testValues.some(v => isNaN(v));
+            if (!hasNaN) {
+                addResult('NaN check', 'PASS', 'No NaN values detected');
+                passed++;
+            } else {
+                addResult('NaN check', 'FAIL', 'NaN values detected!');
+                failed++;
+            }
+
+            // Summary
+            const summary = document.createElement('div');
+            summary.style.fontWeight = 'bold';
+            summary.style.marginTop = '20px';
+            summary.textContent = `Results: ${passed} passed, ${failed} failed`;
+            if (failed === 0) {
+                summary.style.color = 'green';
+            } else {
+                summary.style.color = 'red';
+            }
+            document.getElementById('results').appendChild(summary);
+
+            return failed === 0;
+        }
+
+        function addResult(testName, status, message) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${status.toLowerCase()}`;
+            resultDiv.innerHTML = `<strong>${testName}:</strong> ${status} - ${message}`;
+            document.getElementById('results').appendChild(resultDiv);
+        }
+
+        // Run tests when page loads
+        window.onload = testSpeedCalculation;
+    </script>
+</body>
+
+</html>

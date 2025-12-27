@@ -207,6 +207,14 @@ body:fullscreen .game-container {
     z-index: 100;
 }
 
+.speed-display {
+    color: white;
+    font-size: 16px;
+    text-align: center;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
 .speed-boost-indicator {
     position: relative;
     width: 100%;

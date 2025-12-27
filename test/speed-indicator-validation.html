@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Indicator Validation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .test-suite {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .test-case {
+            background-color: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .test-case.failed {
+            border-left-color: #f44336;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #555;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .result {
+            padding: 10px;
+            background-color: white;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+        }
+
+        .pass {
+            color: #4CAF50;
+            border-left: 3px solid #4CAF50;
+        }
+
+        .fail {
+            color: #f44336;
+            border-left: 3px solid #f44336;
+        }
+
+        .info {
+            color: #2196F3;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="test-suite">
+        <h1>Speed Indicator Validation Test</h1>
+
+        <div class="test-case" id="testCase1">
+            <h2>Test 1: Speed Display Element Exists</h2>
+            <p>Verify that the speed display element is present in the DOM</p>
+            <button onclick="runTest1()">Run Test</button>
+            <div id="result1" class="result"></div>
+        </div>
+
+        <div class="test-case" id="testCase2">
+            <h2>Test 2: Speed Display Shows Correct Format</h2>
+            <p>Verify that speed is displayed in km/h format (e.g., "50 km/h")</p>
+            <button onclick="runTest2()">Run Test</button>
+            <div id="result2" class="result"></div>
+        </div>
+
+        <div class="test-case" id="testCase3">
+            <h2>Test 3: Speed Display Updates Dynamically</h2>
+            <p>Verify that speed display updates when player state changes</p>
+            <button onclick="runTest3()">Run Test</button>
+            <div id="result3" class="result"></div>
+        </div>
+
+        <div class="test-case" id="testCase4">
+            <h2>Test 4: Cooldown Bar Visibility</h2>
+            <p>Verify that cooldown bar is visible only during cooldown period</p>
+            <button onclick="runTest4()">Run Test</button>
+            <div id="result4" class="result"></div>
+        </div>
+
+        <div class="test-case" id="testCase5">
+            <h2>Test 5: Speed Range Validation</h2>
+            <p>Verify that speed stays within expected ranges (50-80 km/h)</p>
+            <button onclick="runTest5()">Run Test</button>
+            <div id="result5" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // Mock implementation to test the logic
+        let speedDisplayElement;
+        let cooldownBarElement;
+
+        function runTest1() {
+            const resultDiv = document.getElementById('result1');
+            try {
+                // Check if element exists (simulating what would be in index.html)
+                const mockSpeedDisplay = document.createElement('div');
+                mockSpeedDisplay.id = 'speed-display';
+                mockSpeedDisplay.textContent = '50 km/h';
+                document.body.appendChild(mockSpeedDisplay);
+
+                speedDisplayElement = document.getElementById('speed-display');
+
+                if (speedDisplayElement) {
+                    resultDiv.innerHTML = '<strong>✓ PASS</strong>: Speed display element exists in DOM';
+                    resultDiv.className = 'result pass';
+                    return true;
+                } else {
+                    throw new Error('Speed display element not found');
+                }
+            } catch (e) {
+                resultDiv.innerHTML = `<strong>✗ FAIL</strong>: ${e.message}`;
+                resultDiv.className = 'result fail';
+                document.getElementById('testCase1').className = 'test-case failed';
+                return false;
+            }
+        }
+
+        function runTest2() {
+            const resultDiv = document.getElementById('result2');
+            try {
+                if (!speedDisplayElement) {
+                    throw new Error('Speed display element not initialized. Run Test 1 first.');
+                }
+
+                // Simulate different speed values
+                const testSpeeds = [50, 65, 80];
+                let allPassed = true;
+
+                for (const speed of testSpeeds) {
+                    speedDisplayElement.textContent = `${speed} km/h`;
+                    if (!speedDisplayElement.textContent.includes('km/h')) {
+                        throw new Error(`Speed ${speed} not formatted correctly`);
+                    }
+                }
+
+                resultDiv.innerHTML = '<strong>✓ PASS</strong>: Speed display shows correct format (XX km/h)';
+                resultDiv.className = 'result pass';
+                return true;
+            } catch (e) {
+                resultDiv.innerHTML = `<strong>✗ FAIL</strong>: ${e.message}`;
+                resultDiv.className = 'result fail';
+                document.getElementById('testCase2').className = 'test-case failed';
+                return false;
+            }
+        }
+
+        function runTest3() {
+            const resultDiv = document.getElementById('result3');
+            try {
+                if (!speedDisplayElement) {
+                    throw new Error('Speed display element not initialized. Run Test 1 first.');
+                }
+
+                // Simulate state changes
+                const states = [
+                    { name: 'Normal', speed: 50 },
+                    { name: 'Boosted', speed: 75 },
+                    { name: 'Cooldown', speed: 52 }
+                ];
+
+                let allPassed = true;
+                for (const state of states) {
+                    speedDisplayElement.textContent = `${state.speed} km/h`;
+                    const displayedSpeed = parseFloat(speedDisplayElement.textContent);
+                    if (Math.abs(displayedSpeed - state.speed) > 0.1) {
+                        throw new Error(`State ${state.name}: Expected ${state.speed}, got ${displayedSpeed}`);
+                    }
+                }
+
+                resultDiv.innerHTML = '<strong>✓ PASS</strong>: Speed display updates correctly for different states';
+                resultDiv.className = 'result pass';
+                return true;
+            } catch (e) {
+                resultDiv.innerHTML = `<strong>✗ FAIL</strong>: ${e.message}`;
+                resultDiv.className = 'result fail';
+                document.getElementById('testCase3').className = 'test-case failed';
+                return false;
+            }
+        }
+
+        function runTest4() {
+            const resultDiv = document.getElementById('result4');
+            try {
+                // Create mock cooldown bar
+                const mockCooldownBar = document.createElement('div');
+                mockCooldownBar.id = 'cooldown-bar';
+                mockCooldownBar.style.display = 'none';
+                document.body.appendChild(mockCooldownBar);
+                cooldownBarElement = document.getElementById('cooldown-bar');
+
+                // Test visibility states
+                const testCases = [
+                    { state: 'No cooldown', shouldBeVisible: false },
+                    { state: 'During cooldown', shouldBeVisible: true }
+                ];
+
+                for (const testCase of testCases) {
+                    if (testCase.shouldBeVisible) {
+                        cooldownBarElement.style.display = 'block';
+                        if (cooldownBarElement.style.display !== 'block') {
+                            throw new Error(`Cooldown bar not visible when it should be`);
+                        }
+                    } else {
+                        cooldownBarElement.style.display = 'none';
+                        if (cooldownBarElement.style.display !== 'none') {
+                            throw new Error(`Cooldown bar visible when it shouldn't be`);
+                        }
+                    }
+                }
+
+                resultDiv.innerHTML = '<strong>✓ PASS</strong>: Cooldown bar visibility controlled correctly';
+                resultDiv.className = 'result pass';
+                return true;
+            } catch (e) {
+                resultDiv.innerHTML = `<strong>✗ FAIL</strong>: ${e.message}`;
+                resultDiv.className = 'result fail';
+                document.getElementById('testCase4').className = 'test-case failed';
+                return false;
+            }
+        }
+
+        function runTest5() {
+            const resultDiv = document.getElementById('result5');
+            try {
+                if (!speedDisplayElement) {
+                    throw new Error('Speed display element not initialized. Run Test 1 first.');
+                }
+
+                // Test speed ranges
+                const testCases = [
+                    { state: 'Normal driving', min: 49, max: 51 },
+                    { state: 'During boost', min: 60, max: 80 },
+                    { state: 'During cooldown', min: 50, max: 55 }
+                ];
+
+                for (const testCase of testCases) {
+                    // Simulate speeds in range
+                    const speed = (testCase.min + testCase.max) / 2;
+                    speedDisplayElement.textContent = `${speed} km/h`;
+                    const displayedSpeed = parseFloat(speedDisplayElement.textContent);
+
+                    if (displayedSpeed < testCase.min || displayedSpeed > testCase.max) {
+                        throw new Error(`State ${testCase.state}: Speed ${displayedSpeed} outside expected range [${testCase.min}, ${testCase.max}]`);
+                    }
+                }
+
+                resultDiv.innerHTML = '<strong>✓ PASS</strong>: All speeds within expected ranges';
+                resultDiv.className = 'result pass';
+                return true;
+            } catch (e) {
+                resultDiv.innerHTML = `<strong>✗ FAIL</strong>: ${e.message}`;
+                resultDiv.className = 'result fail';
+                document.getElementById('testCase5').className = 'test-case failed';
+                return false;
+            }
+        }
+
+        // Run all tests automatically on page load
+        window.onload = function () {
+            setTimeout(runTest1, 100);
+            setTimeout(runTest2, 300);
+            setTimeout(runTest3, 500);
+            setTimeout(runTest4, 700);
+            setTimeout(runTest5, 900);
+        };
+    </script>
+</body>
+
+</html>

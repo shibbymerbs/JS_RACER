@@ -20,9 +20,11 @@ class Game {
         this.boostCooldownEndTime = Date.now();
         this.speedMultiplier = 1.5; // 1.5x speed during boost
 
-        // Get UI elements for speed boost indicator
+        // Get UI elements for speed boost indicator and speed display
         this.speedBoostFill = document.querySelector('.speed-boost-fill');
         this.cooldownFill = document.querySelector('.cooldown-fill');
+        this.speedDisplay = document.querySelector('.speed-display');
+
 
         // Toast notifications
         this.toastContainer = document.getElementById('toastContainer');
@@ -509,45 +511,48 @@ class Game {
     updateSpeedBoostIndicator() {
         const now = Date.now();
 
-        //if (this.speedBoostFill && this.cooldownFill) {
         // Check if boost is active or on cooldown
-        if (now < this.boostCooldownEndTime) {
-            // Calculate progress for the current state
-            let progress;
-            let maxTime;
-
-            if (this.speedBoostActive && now < this.speedBoostEndTime) {
-                // Boost is active - show green fill
-                progress = 1 - ((now - this.speedBoostEndTime + 3000) / 3000);
-                maxTime = 3000;
-            } else if (now >= this.speedBoostEndTime && now < this.boostCooldownEndTime) {
-                // Cooldown is active - show orange fill
-                progress = 1 - ((now - this.boostCooldownEndTime + 2000) / 2000);
-                maxTime = 2000;
-            }
-
-            if (progress !== undefined && progress >= 0) {
-                // Ensure progress is between 0 and 1
-                const clampedProgress = Math.max(0, Math.min(1, progress));
-                this.speedBoostFill.style.width = `${clampedProgress * 100}%`;
-
-                // Show cooldown bar during cooldown period only
-                if (now >= this.speedBoostEndTime && now < this.boostCooldownEndTime) {
-                    this.cooldownFill.style.width = `${clampedProgress * 100}%`;
-                } else {
-                    this.cooldownFill.style.width = '0%';
-                }
-            }
+        if (this.speedBoostActive && now < this.speedBoostEndTime) {
+            // Boost is active - show green fill for boost bar
+            const boostProgress = 1 - ((now - this.speedBoostEndTime + 3000) / 3000);
+            const clampedBoostProgress = Math.max(0, Math.min(1, boostProgress));
+            this.speedBoostFill.style.width = `${clampedBoostProgress * 100}%`;
+        } else if (now >= this.speedBoostEndTime && now < this.boostCooldownEndTime) {
+            // Cooldown is active - show orange fill for cooldown bar
+            const cooldownProgress = 1 - ((now - this.boostCooldownEndTime + 2000) / 2000);
+            const clampedCooldownProgress = Math.max(0, Math.min(1, cooldownProgress));
+            this.cooldownFill.style.width = `${clampedCooldownProgress * 100}%`;
         } else {
             // No boost or cooldown - hide indicators
             this.speedBoostFill.style.width = '0%';
             this.cooldownFill.style.width = '0%';
         }
-        //}
 
         // Update boost state based on time
         if (now >= this.speedBoostEndTime) {
             this.speedBoostActive = false;
+        }
+
+        // Calculate and display moving average speed
+        this.updateSpeedDisplay();
+    }
+
+    updateSpeedDisplay() {
+        // Get player's current speed from player.js
+        const playerSpeed = this.player ? this.player.getCurrentSpeed() : 0;
+
+        // Calculate moving average using player's history array
+        let averageSpeed = 0;
+        if (this.player && this.player.speedHistory.length > 0) {
+            averageSpeed = this.player.getAverageSpeed();
+        }
+
+        // Convert to km/hr and clamp to reasonable range (50-80 km/hr)
+        const speedKmHr = Math.max(50, Math.min(80, averageSpeed));
+
+        // Update speed display text
+        if (this.speedDisplay) {
+            this.speedDisplay.textContent = `${Math.round(speedKmHr)} km/hr`;
         }
     }
 

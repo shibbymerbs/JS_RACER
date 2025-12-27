@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Speed Display Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .speed-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .cooldown-bar {
+            width: 200px;
+            height: 20px;
+            background-color: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .cooldown-fill {
+            height: 100%;
+            background-color: #ff5555;
+            width: 0%;
+            transition: width 0.2s linear;
+        }
+
+        .speed-display {
+            font-size: 16px;
+            font-weight: bold;
+            min-width: 80px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Speed Display Test</h1>
+
+    <div class="speed-container">
+        <div class="cooldown-bar" id="cooldownBar">
+            <div class="cooldown-fill" id="cooldownFill"></div>
+        </div>
+        <div class="speed-display" id="speedDisplay">50 km/hr</div>
+    </div>
+
+    <button onclick="startTest()">Start Test</button>
+    <button onclick="applyBoost()">Apply Boost</button>
+    <button onclick="endBoost()">End Boost (Cooldown)</button>
+    <button onclick="reset()">Reset</button>
+
+    <div id="log"></div>
+
+    <script>
+        // Simplified version of the Player class for testing
+        class TestPlayer {
+            constructor() {
+                this.speedHistory = [];
+                this.maxHistory = 10;
+                this.isBoosting = false;
+                this.cooldownRemaining = 0;
+                this.currentSpeed = 50; // km/hr
+            }
+
+            getCurrentSpeed() {
+                if (this.isBoosting) {
+                    return 80; // Boosted speed
+                } else if (this.cooldownRemaining > 0) {
+                    return 52; // Slightly reduced speed during cooldown
+                }
+                return this.currentSpeed;
+            }
+
+            updateSpeedHistory() {
+                const current = this.getCurrentSpeed();
+                this.speedHistory.push(current);
+                if (this.speedHistory.length > this.maxHistory) {
+                    this.speedHistory.shift();
+                }
+            }
+
+            getAverageSpeed() {
+                if (this.speedHistory.length === 0) return 50;
+                const sum = this.speedHistory.reduce((a, b) => a + b, 0);
+                return Math.round(sum / this.speedHistory.length);
+            }
+
+            startBoost() {
+                this.isBoosting = true;
+                this.cooldownRemaining = 0;
+            }
+
+            endBoost() {
+                this.isBoosting = false;
+                this.cooldownRemaining = 3; // 3 seconds cooldown
+            }
+        }
+
+        const player = new TestPlayer();
+        let animationFrame = null;
+
+        function updateSpeedDisplay() {
+            player.updateSpeedHistory();
+
+            const speedDisplay = document.getElementById('speedDisplay');
+            const averageSpeed = player.getAverageSpeed();
+            speedDisplay.textContent = `${averageSpeed} km/hr`;
+
+            // Update cooldown bar
+            const cooldownBar = document.getElementById('cooldownBar');
+            const cooldownFill = document.getElementById('cooldownFill');
+
+            if (player.cooldownRemaining > 0) {
+                cooldownBar.style.display = 'block';
+                const fillPercent = Math.max(0, (player.cooldownRemaining / 3) * 100);
+                cooldownFill.style.width = `${fillPercent}%`;
+                player.cooldownRemaining -= 0.1;
+            } else {
+                cooldownBar.style.display = 'none';
+            }
+
+            animationFrame = requestAnimationFrame(updateSpeedDisplay);
+        }
+
+        function startTest() {
+            if (animationFrame) cancelAnimationFrame(animationFrame);
+
+            // Reset to normal state
+            player.isBoosting = false;
+            player.cooldownRemaining = 0;
+
+            updateSpeedDisplay();
+            addLog('Test started - normal speed');
+        }
+
+        function applyBoost() {
+            player.startBoost();
+            addLog('Boost applied - speed should increase to ~80 km/hr');
+        }
+
+        function endBoost() {
+            player.endBoost();
+            addLog('Boost ended - cooldown started (3 seconds)');
+        }
+
+        function reset() {
+            if (animationFrame) cancelAnimationFrame(animationFrame);
+            player.speedHistory = [];
+            player.isBoosting = false;
+            player.cooldownRemaining = 0;
+            document.getElementById('speedDisplay').textContent = '50 km/hr';
+            document.getElementById('cooldownBar').style.display = 'none';
+            addLog('Reset complete');
+        }
+
+        function addLog(message) {
+            const log = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            log.appendChild(entry);
+        }
+    </script>
+</body>
+
+</html>

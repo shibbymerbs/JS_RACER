@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        .test-container {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .speed-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Speed Test</h1>
+
+    <div class="test-container">
+        <h2>Test 1: Normal Speed (50 km/h)</h2>
+        <p>Expected: Speed should be 50 km/h when no boost or cooldown is active</p>
+        <button id="testNormal">Run Test</button>
+        <div id="result1" class="speed-display"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>Test 2: Boosted Speed (60-80 km/h)</h2>
+        <p>Expected: Speed should increase to 60-80 km/h during boost</p>
+        <button id="testBoost">Run Test</button>
+        <div id="result2" class="speed-display"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>Test 3: Cooldown Speed (50-55 km/h)</h2>
+        <p>Expected: Speed should be slightly reduced during cooldown</p>
+        <button id="testCooldown">Run Test</button>
+        <div id="result3" class="speed-display"></div>
+    </div>
+
+    <script>
+        // Simulate the speed calculation logic from player.js
+        class MockGame {
+            constructor() {
+                this.speedBoostActive = false;
+                this.boostCooldownEndTime = Date.now();
+                this.speedMultiplier = 1.5;
+            }
+
+            activateSpeedBoost() {
+                this.speedBoostActive = true;
+                this.boostCooldownEndTime = Date.now() + 2000; // 2 seconds cooldown
+            }
+        }
+
+        class MockPlayer {
+            constructor(game) {
+                this.game = game;
+                this.speedHistory = [];
+                this.maxSpeedHistory = 10;
+            }
+
+            getCurrentSpeed() {
+                const baseSpeed = 50;
+
+                if (this.game.speedBoostActive) {
+                    return Math.min(80, baseSpeed + (this.game.speedMultiplier - 1) * 20);
+                } else if (Date.now() < this.game.boostCooldownEndTime && this.game.boostCooldownEndTime > 0) {
+                    const cooldownProgress = 1 - Math.min(1, (this.game.boostCooldownEndTime - Date.now()) / 2000);
+                    return baseSpeed * (0.9 + cooldownProgress * 0.1);
+                }
+
+                return baseSpeed;
+            }
+
+            updateSpeedHistory() {
+                const currentSpeed = this.getCurrentSpeed();
+                this.speedHistory.push(currentSpeed);
+
+                if (this.speedHistory.length > this.maxSpeedHistory) {
+                    this.speedHistory.shift();
+                }
+            }
+
+            getAverageSpeed() {
+                if (this.speedHistory.length === 0) {
+                    return 50;
+                }
+
+                const sum = this.speedHistory.reduce((acc, speed) => acc + speed, 0);
+                return Math.round(sum / this.speedHistory.length * 10) / 10;
+            }
+        }
+
+        // Test functions
+        document.getElementById('testNormal').addEventListener('click', function () {
+            const game = new MockGame();
+            const player = new MockPlayer(game);
+
+            // Simulate normal driving for a few frames
+            for (let i = 0; i < 10; i++) {
+                player.updateSpeedHistory();
+            }
+
+            const avgSpeed = player.getAverageSpeed();
+            document.getElementById('result1').textContent =
+                `Result: ${avgSpeed.toFixed(1)} km/h - ` +
+                (Math.abs(avgSpeed - 50) < 1 ? '✓ PASS' : '✗ FAIL');
+        });
+
+        document.getElementById('testBoost').addEventListener('click', function () {
+            const game = new MockGame();
+            const player = new MockPlayer(game);
+
+            // Activate boost
+            game.activateSpeedBoost();
+
+            // Simulate driving during boost
+            for (let i = 0; i < 10; i++) {
+                player.updateSpeedHistory();
+            }
+
+            const avgSpeed = player.getAverageSpeed();
+            document.getElementById('result2').textContent =
+                `Result: ${avgSpeed.toFixed(1)} km/h - ` +
+                (avgSpeed >= 60 && avgSpeed <= 80 ? '✓ PASS' : '✗ FAIL');
+        });
+
+        document.getElementById('testCooldown').addEventListener('click', function () {
+            const game = new MockGame();
+            const player = new MockPlayer(game);
+
+            // Activate boost and wait for cooldown
+            game.activateSpeedBoost();
+
+            // Wait until cooldown starts (boost ends after 3 seconds, but we'll simulate it)
+            setTimeout(function () {
+                // Simulate driving during cooldown
+                for (let i = 0; i < 10; i++) {
+                    player.updateSpeedHistory();
+                }
+
+                const avgSpeed = player.getAverageSpeed();
+                document.getElementById('result3').textContent =
+                    `Result: ${avgSpeed.toFixed(1)} km/h - ` +
+                    (avgSpeed >= 50 && avgSpeed <= 55 ? '✓ PASS' : '✗ FAIL');
+            }, 100);
+        });
+    </script>
+</body>
+
+</html>
