@@ -179,6 +179,11 @@ class Game {
         // Set cooldown to start after boost ends (2 seconds cooldown)
         this.boostCooldownEndTime = this.speedBoostEndTime + 2000;
 
+        // Play speed boost sound effect
+        if (window.audioManager) {
+            window.audioManager.playSoundEffect('speedBoost');
+        }
+
         // Visual feedback - flash the screen or show indicator
         const canvas = document.getElementById('gameCanvas');
         if (canvas) {
@@ -238,6 +243,11 @@ class Game {
         if (gameOverScreen) {
             gameOverScreen.style.display = 'none';
         }
+
+        // Play background music when game starts
+        if (window.audioManager) {
+            window.audioManager.playBackgroundMusic();
+        }
         // Add restart event listener
         document.querySelector('.restart-btn').addEventListener('click', () => {
             gameOverScreen.querySelector('.score-form').style.display = 'flex';
@@ -289,6 +299,7 @@ class Game {
                 document.querySelector('.game-container').appendChild(gameOverScreen);
             } else {
                 gameOverScreen.style.display = 'flex';
+                window.audioManager.pauseBackgroundMusic();
                 const scoreDisplay = gameOverScreen.querySelector('p');
                 if (scoreDisplay) {
                     scoreDisplay.textContent = `Score: ${this.score}`;
@@ -348,6 +359,11 @@ class Game {
                         this.powerups.splice(i, 1);
                         this.score += 50;
 
+                        // Play points sound effect for collecting power-up
+                        if (window.audioManager) {
+                            window.audioManager.playSoundEffect('points');
+                        }
+
                         // Show toast notification for points
                         this.showToast(50, powerupBox.x + powerupBox.width / 2, powerupBox.y - 30);
                     }
@@ -375,6 +391,11 @@ class Game {
                             this.enemies.splice(i, 1);
                             this.score += 50; // Bonus for destroying enemy with shield
 
+                            // Play points sound effect
+                            if (window.audioManager) {
+                                window.audioManager.playSoundEffect('points');
+                            }
+
                             // Create explosion at enemy position following its trajectory
                             const explosion = new Explosion(
                                 this,
@@ -385,11 +406,26 @@ class Game {
                             );
                             this.explosions.push(explosion);
 
+                            // Play explosion sound effect
+                            if (window.audioManager) {
+                                window.audioManager.playSoundEffect('explosion');
+                            }
+
                             // Show toast notification for points
                             this.showToast(50, enemyBox.x + enemyBox.width / 2, enemyBox.y - 30);
                         } else {
                             // No shield - game over
                             this.gameOver = true;
+
+                            // Play explosion sound effect for player destruction
+                            if (window.audioManager) {
+                                window.audioManager.playSoundEffect('explosion');
+                            }
+
+                            // Play car destroy sound effect for player
+                            if (window.audioManager) {
+                                window.audioManager.playSoundEffect('carDestroy');
+                            }
                         }
                     }
 
@@ -398,10 +434,19 @@ class Game {
                         this.score += 10;
                         enemy.hasScored = true;
 
+                        // Play points sound effect
+                        if (window.audioManager) {
+                            window.audioManager.playSoundEffect('points');
+                        }
+
                         // Show toast notification for points
                         this.showToast(10, enemyBox.x + enemyBox.width / 2, enemyBox.y - 30);
                     }
                 } else {
+                    // Play car destroy sound effect when enemy is removed (goes off screen)
+                    if (window.audioManager) {
+                        window.audioManager.playSoundEffect('carDestroy');
+                    }
                     this.enemies.splice(i, 1);
                 }
             }
@@ -644,4 +689,16 @@ class Game {
             });
         }
     }
+
+
+    /**
+     * Game over handler - called when player loses all lives
+     */
+    gameOver() {
+        this.gameOver = true;
+        // Play explosion sound effect
+        if (window.audioManager) {
+            window.audioManager.playSoundEffect('explosion');
+        }
+    };
 }

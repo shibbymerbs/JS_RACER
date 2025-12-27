@@ -317,3 +317,24 @@ body:fullscreen .fullscreen-btn {
     opacity: 1;
     transform: translateY(0) scale(1);
 }
+
+/* Audio unlock button */
+.unlock-audio-btn {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.unlock-audio-btn:hover {
+    background-color: #45a049;
+}

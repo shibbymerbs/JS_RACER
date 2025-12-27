@@ -10,6 +10,26 @@
 </head>
 
 <body>
+    <!-- Audio elements for background music and sound effects -->
+    <audio id="bgMusic" preload="auto" loop>
+        <source src="assets/audio/bg_music.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="carDestroy" preload="auto">
+        <source src="assets/audio/car_destroy.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="explosion" preload="auto">
+        <source src="assets/audio/explosion.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="points" preload="auto">
+        <source src="assets/audio/points.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="shield" preload="auto">
+        <source src="assets/audio/shield.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="speedBoost" preload="auto">
+        <source src="assets/audio/speed_boost.mp3" type="audio/mpeg">
+    </audio>
+
     <div class="game-container">
         <!-- <button class="fullscreen-btn" id="fullscreenBtn">Fullscreen</button> -->
         <canvas id="gameCanvas"></canvas>
@@ -34,6 +54,9 @@
         </div>
     </div>
 
+    <!-- Audio unlock button for browsers that block autoplay -->
+    <button id="unlockAudioBtn" class="unlock-audio-btn">Click to Unlock Audio</button>
+
     <!-- Game Over Screen -->
     <div class="game-over" id="gameOverScreen">
         <p>Game Over!</p>
@@ -50,6 +73,37 @@
     <script src="js/game.js"></script>
     <script src="js/main.js"></script>
     <script src="js/explosion.js"></script>
+
+    <!-- Audio unlock script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const unlockBtn = document.getElementById('unlockAudioBtn');
+            if (unlockBtn) {
+                unlockBtn.addEventListener('click', function () {
+                    // Play a silent frame to unlock audio
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const source = audioCtx.createBufferSource();
+
+                    // Unlock the button after click
+                    this.style.display = 'none';
+
+                    // Initialize AudioManager after unlocking audio
+                    if (typeof initAudioManager === 'function') {
+                        initAudioManager();
+                    }
+                });
+            }
+
+            // Try to initialize audio manager immediately if not blocked
+            try {
+                if (typeof initAudioManager === 'function') {
+                    initAudioManager();
+                }
+            } catch (e) {
+                console.log('Audio initialization deferred:', e);
+            }
+        });
+    </script>
 </body>
 
 </html>
