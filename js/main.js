@@ -6,7 +6,9 @@ class AudioManager {
         this.isMuted = false;
         this.init();
     }
-
+    isInitialized() {
+        return this.bgMusic !== null;
+    }
     init() {
         // Get DOM audio elements
         this.bgMusic = document.getElementById('bgMusic');
@@ -31,9 +33,13 @@ class AudioManager {
 
     playBackgroundMusic() {
         if (this.bgMusic && !this.isMuted) {
+            console.log('Audio BG playback');
             // Try to play the audio, handling autoplay policy restrictions
             const promise = this.bgMusic.play();
             if (promise !== undefined) {
+                promise.then(_ => {
+                    console.log('Background music playing');
+                });
                 promise.catch(error => {
                     console.log('Audio playback prevented:', error);
                     // If autoplay is blocked, we'll try again when user interacts with the page
@@ -86,37 +92,78 @@ class AudioManager {
 // Global audio manager instance
 var audioManager;
 
+// Game instance will be initialized after splash screen
+var game;
+
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize audio manager
     audioManager = new AudioManager();
 
-    // Initialize the game
-    const game = new Game();
+    // Get DOM elements for splash screen
+    const splashScreen = document.getElementById('splashScreen');
+    const startGameBtn = document.getElementById('startGameBtn');
 
-    // Show score in UI
-    setInterval(() => {
-        if (game && !game.gameOver) {
-            document.getElementById('score').textContent = `Score: ${Math.floor(game.score)}`;
-        }
-    }, 100);
+    // Show splash screen initially
+    if (splashScreen) {
+        splashScreen.style.display = 'flex';
+    }
 
-    // Play background music when game starts
-    audioManager.playBackgroundMusic();
-
-    // Try to play background music again if it was blocked by autoplay policy
-    // setTimeout(() => {
-    //     if (audioManager.bgMusic && !audioManager.bgMusic.paused) {
-    //         console.log('Background music is playing');
-    //     } else {
-    //         console.log('Background music not playing, trying again...');
-    //         audioManager.playBackgroundMusic();
-    //     }
-    // }, 2000);
-
-    // Handle user interaction to enable autoplay
-    document.addEventListener('click', () => {
-        if (audioManager.bgMusic && audioManager.bgMusic.paused) {
+    // Start game button click handler
+    if (startGameBtn) {
+        startGameBtn.addEventListener('click', () => {
+            // Hide splash screen with animation
+            if (splashScreen) {
+                splashScreen.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+                splashScreen.style.opacity = '0';
+                setTimeout(() => {
+                    splashScreen.style.display = 'none';
+                }, 500);
+            }
             audioManager.playBackgroundMusic();
-        }
-    }, { once: true });
+            // Initialize the game after splash screen is hidden
+            setTimeout(() => {
+                game = new Game();
+
+                // Show score in UI and animate on score changes
+                // let lastScore = 0;
+                // const scoreInterval = setInterval(() => {
+                //     if (game && !game.gameOver) {
+                //         const currentScore = Math.floor(game.scoreManager.getCurrentScore());
+                //         document.getElementById('score').textContent = `Score: ${currentScore}`;
+
+                //         // Animate when score increases
+                //         if (currentScore > lastScore) {
+                //             game.scoreManager.animateScore();
+                //         }
+                //         lastScore = currentScore;
+                //     } else {
+                //         clearInterval(scoreInterval);
+                //     }
+                // }, 100);
+
+                // Play background music after user interaction
+
+
+                // Handle any remaining clicks to ensure autoplay works
+                document.addEventListener('click', () => {
+                    if (audioManager.bgMusic && audioManager.bgMusic.paused) {
+                        audioManager.playBackgroundMusic();
+                    }
+                }, { once: true });
+            }, 500);
+        });
+    }
+
+    // Also allow any click on the splash screen to start the game
+    if (splashScreen) {
+        splashScreen.addEventListener('click', (e) => {
+            // Only trigger on button click, not background clicks
+            if (e.target === splashScreen || e.target === startGameBtn) {
+                return;
+            }
+            if (startGameBtn) {
+                startGameBtn.click();
+            }
+        });
+    }
 });

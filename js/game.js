@@ -221,6 +221,8 @@ class Game {
             submitScoreBtn.replaceWith(submitScoreBtn.cloneNode(true));
         }
 
+        // Initialize score manager
+        this.scoreManager = new ScoreManager();
         // Create player
         this.player = new Player(this);
         this.startTime = null;
@@ -228,7 +230,7 @@ class Game {
         this.enemies = [];
         this.powerups = [];
         this.explosions = []; // Clear explosions on restart
-        this.score = 0;
+        this.scoreManager.reset();
         this.gameOver = false;
         this.lastEnemyTime = 0;
         this.lastPowerupTime = 0;
@@ -245,6 +247,9 @@ class Game {
         }
 
         // Play background music when game starts
+        if (window.audioManager && !window.audioManager.isInitialized()) {
+            window.audioManager.init();
+        }
         if (window.audioManager) {
             window.audioManager.playBackgroundMusic();
         }
@@ -288,7 +293,7 @@ class Game {
                 gameOverScreen.className = 'game-over';
                 gameOverScreen.innerHTML = `
                     <h1>Game Over</h1>
-                    <p>Score: ${this.score}</p>
+                    <p>Score: ${this.scoreManager.getCurrentScore()}</p>
                     <div class="score-form">
                         <label for="playerName">Enter your name (max 10 chars):</label>
                         <input type="text" id="playerName" maxlength="10" placeholder="Your Name">
@@ -302,7 +307,7 @@ class Game {
                 window.audioManager.pauseBackgroundMusic();
                 const scoreDisplay = gameOverScreen.querySelector('p');
                 if (scoreDisplay) {
-                    scoreDisplay.textContent = `Score: ${this.score}`;
+                    scoreDisplay.textContent = `Score: ${this.scoreManager.getCurrentScore()}`;
                 }
 
                 // Show high scores
@@ -357,7 +362,7 @@ class Game {
                         // Collect the power-up
                         powerup.activate(this.player);
                         this.powerups.splice(i, 1);
-                        this.score += 50;
+                        this.scoreManager.addPoints(50);
 
                         // Play points sound effect for collecting power-up
                         if (window.audioManager) {
@@ -389,7 +394,7 @@ class Game {
                         if (this.player.isInvincible) {
                             // Shield is active - destroy the enemy with explosion effect
                             this.enemies.splice(i, 1);
-                            this.score += 50; // Bonus for destroying enemy with shield
+                            this.scoreManager.addPoints(50); // Bonus for destroying enemy with shield
 
                             // Play points sound effect
                             if (window.audioManager) {
@@ -431,7 +436,7 @@ class Game {
 
                     // Score when enemy passes the player
                     if (enemyBox.y > playerBox.y + playerBox.height && !enemy.hasScored) {
-                        this.score += 10;
+                        this.scoreManager.addPoints(10);
                         enemy.hasScored = true;
 
                         // Play points sound effect
@@ -443,10 +448,7 @@ class Game {
                         this.showToast(10, enemyBox.x + enemyBox.width / 2, enemyBox.y - 30);
                     }
                 } else {
-                    // Play car destroy sound effect when enemy is removed (goes off screen)
-                    if (window.audioManager) {
-                        window.audioManager.playSoundEffect('carDestroy');
-                    }
+                    // Enemy goes off screen without scoring - no sound needed
                     this.enemies.splice(i, 1);
                 }
             }
@@ -634,7 +636,7 @@ class Game {
      */
     saveScore(name, score) {
         const scores = this.loadHighScores();
-        scores.push({ name: name.substring(0, 10), score: score }); // Limit to 10 chars
+        scores.push({ name: name.substring(0, 10), score: this.scoreManager.getCurrentScore() }); // Limit to 10 chars
 
         // Sort by score (descending)
         scores.sort((a, b) => b.score - a.score);
@@ -659,6 +661,7 @@ class Game {
      * Display high scores on game over screen
      */
     showHighScores() {
+        const currentScore = this.scoreManager.getCurrentScore();
         // Check if high scores section already exists
         let highScoresSection = document.querySelector('.high-scores');
         if (!highScoresSection) {
